@@ -14,7 +14,7 @@ COPY src src
 RUN chmod +x ./gradlew && ./gradlew build --no-daemon
 
 # Copy the built JAR (use the Spring Boot fat jar, not the plain jar)
-RUN cp build/libs/gas-payer-service-*.jar app.jar
+RUN cp build/libs/gas-payer-service-[0-9]*.jar app.jar
 
 # Create user for running the app
 RUN addgroup --system --gid 1001 appgroup && \
