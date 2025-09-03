@@ -81,14 +81,14 @@ jobs:
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           
           # Stop and remove existing container
-          docker stop gas-payer-service || true
-          docker rm gas-payer-service || true
+          docker stop ${{ vars.SERVICE_NAME }} || true
+          docker rm ${{ vars.SERVICE_NAME }} || true
           
           # Run new container
           docker run -d \
-            --name gas-payer-service \
+            --name ${{ vars.SERVICE_NAME }} \
+            --network webnet \
             --restart unless-stopped \
-            -p 8080:8080 \
             -v /home/gituser/chainservice:/home/gituser/chainservice:ro \
             -e BLOCKCHAIN_RPC_URL="${{ vars.BLOCKCHAIN_RPC_URL }}" \
             -e BLOCKCHAIN_CHAIN_ID="${{ vars.BLOCKCHAIN_CHAIN_ID }}" \

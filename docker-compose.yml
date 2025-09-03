@@ -3,8 +3,7 @@ version: '3.8'
 services:
   gas-payer-service:
     build: .
-    ports:
-      - "8080:8080"
+    container_name: ${SERVICE_NAME:-gas-payer-service}
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - BLOCKCHAIN_RPC_URL=${BLOCKCHAIN_RPC_URL}
@@ -18,9 +17,15 @@ services:
     volumes:
       - /home/gituser/chainservice:/home/gituser/chainservice:ro
     restart: unless-stopped
+    networks:
+      - webnet
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+networks:
+  webnet:
+    external: true
