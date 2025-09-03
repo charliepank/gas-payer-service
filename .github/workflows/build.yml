@@ -1,0 +1,100 @@
+name: Build and Deploy Gas Payer Service
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'test*'
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || startsWith(github.ref, 'refs/tags/test') && 'test' || 'development' }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v3
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Run tests
+      run: ./gradlew test
+
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Log in to Container Registry
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      if: github.event_name != 'pull_request'
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=tag
+          type=sha,prefix={{tag}}-
+
+    - name: Build and push Docker image
+      if: github.event_name != 'pull_request'
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Deploy to VM
+      if: github.event_name != 'pull_request'
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ vars.VM_IP }}
+        username: root
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Pull the new image
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          
+          # Stop and remove existing container
+          docker stop gas-payer-service || true
+          docker rm gas-payer-service || true
+          
+          # Run new container
+          docker run -d \
+            --name gas-payer-service \
+            --restart unless-stopped \
+            -p 8080:8080 \
+            -v /home/gituser/chainservice:/home/gituser/chainservice:ro \
+            -e BLOCKCHAIN_RPC_URL="${{ vars.BLOCKCHAIN_RPC_URL }}" \
+            -e BLOCKCHAIN_CHAIN_ID="${{ vars.BLOCKCHAIN_CHAIN_ID }}" \
+            -e GAS_PAYER_CONTRACT_ADDRESS="${{ vars.GAS_PAYER_CONTRACT_ADDRESS }}" \
+            -e GAS_PRICE_MULTIPLIER="${{ vars.GAS_PRICE_MULTIPLIER }}" \
+            -e MAX_GAS_LIMIT="${{ vars.MAX_GAS_LIMIT }}" \
+            -e MAX_GAS_COST_WEI="${{ vars.MAX_GAS_COST_WEI }}" \
+            -e MAX_GAS_PRICE_MULTIPLIER="${{ vars.MAX_GAS_PRICE_MULTIPLIER }}" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}

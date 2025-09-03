@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  gas-payer-service:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - BLOCKCHAIN_RPC_URL=${BLOCKCHAIN_RPC_URL}
+      - BLOCKCHAIN_CHAIN_ID=${BLOCKCHAIN_CHAIN_ID}
+      - GAS_PAYER_CONTRACT_ADDRESS=${GAS_PAYER_CONTRACT_ADDRESS}
+      - GAS_PRICE_MULTIPLIER=${GAS_PRICE_MULTIPLIER:-1.2}
+      - MAX_GAS_LIMIT=${MAX_GAS_LIMIT:-500000}
+      - MAX_GAS_COST_WEI=${MAX_GAS_COST_WEI:-1000000000000000000}
+      - MAX_GAS_PRICE_MULTIPLIER=${MAX_GAS_PRICE_MULTIPLIER:-3.2}
+      - SECURITY_CONFIG_FILE=/home/gituser/chainservice/security-config.json
+    volumes:
+      - /home/gituser/chainservice:/home/gituser/chainservice:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gas-payer-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+# Blockchain configuration
+blockchain:
+  rpc:
+    url: ${BLOCKCHAIN_RPC_URL:https://api.avax-test.network/ext/bc/C/rpc}
+  chain:
+    id: ${BLOCKCHAIN_CHAIN_ID:43113}
+  relayer:
+    gas-payer-contract-address: ${GAS_PAYER_CONTRACT_ADDRESS:}
+  gas:
+    price-multiplier: ${GAS_PRICE_MULTIPLIER:1.2}
+    max-gas-limit: ${MAX_GAS_LIMIT:500000}
+    max-gas-cost-wei: ${MAX_GAS_COST_WEI:1000000000000000000}
+    max-gas-price-multiplier: ${MAX_GAS_PRICE_MULTIPLIER:3.2}
+
+# Security configuration file path
+security:
+  config-file: ${SECURITY_CONFIG_FILE:/home/gituser/chainservice/security-config.json}
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.gaspayer: INFO
+    com.utility.chainservice: INFO
+    org.web3j: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

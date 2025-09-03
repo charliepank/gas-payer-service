@@ -1,0 +1,61 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Security and sensitive files
+*.key
+*.pem
+security-config.json
+.env
+.env.local
+.env.production
+
+# Spring Boot
+application-*.yml
+application-*.properties
+!application.yml
+!application.properties
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# JVM crash logs
+hs_err_pid*
