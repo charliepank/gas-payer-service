@@ -77,8 +77,8 @@ jobs:
         username: gituser
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          # Pull the new image
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          # Pull the new image using the tag created by metadata action
+          docker pull ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           
           # Stop and remove existing container
           docker stop ${{ vars.SERVICE_NAME }} || true
@@ -97,4 +97,4 @@ jobs:
             -e MAX_GAS_LIMIT="${{ vars.MAX_GAS_LIMIT }}" \
             -e MAX_GAS_COST_WEI="${{ vars.MAX_GAS_COST_WEI }}" \
             -e MAX_GAS_PRICE_MULTIPLIER="${{ vars.MAX_GAS_PRICE_MULTIPLIER }}" \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
