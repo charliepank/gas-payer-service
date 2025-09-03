@@ -20,8 +20,7 @@ Processes a signed transaction with automatic gas management.
 ```json
 {
   "userWalletAddress": "0x742b35Cc6834C0532Fee23f35E4cdb41c176fBc2",
-  "signedTransactionHex": "0xf86c2a8504a817c80082520894742b35cc6834c0532fee23f35e4cdb41c176fbc2880de0b6b3a764000080820a95a0...",
-  "operationName": "transfer"
+  "signedTransactionHex": "0xf86c2a8504a817c80082520894742b35cc6834c0532fee23f35e4cdb41c176fbc2880de0b6b3a764000080820a95a0..."
 }
 ```
 
@@ -33,6 +32,16 @@ Processes a signed transaction with automatic gas management.
   "contractAddress": "0x...",
   "error": null
 }
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8080/api/v1/signed-transaction \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userWalletAddress": "0x742b35Cc6834C0532Fee23f35E4cdb41c176fBc2",
+    "signedTransactionHex": "0xf86c2a8504a817c80082520894742b35cc6834c0532fee23f35e4cdb41c176fbc2880de0b6b3a764000080820a95a0..."
+  }'
 ```
 
 ## Configuration
