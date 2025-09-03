@@ -77,6 +77,9 @@ jobs:
         username: gituser
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          # Login to GitHub Container Registry
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
           # Pull the new image using the tag created by metadata action
           docker pull ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           
