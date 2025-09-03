@@ -16,4 +16,9 @@ class BlockchainConfiguration {
     fun blockchainProperties(): BlockchainProperties {
         return BlockchainProperties()
     }
+    
+    @Bean("securityConfigPath")
+    fun securityConfigPath(@org.springframework.beans.factory.annotation.Value("\${security.config-path:/app/config/security-config.json}") configPath: String): String {
+        return configPath
+    }
 }
