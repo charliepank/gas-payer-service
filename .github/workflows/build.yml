@@ -92,7 +92,7 @@ jobs:
             --name ${{ vars.SERVICE_NAME }} \
             --network webnet \
             --restart unless-stopped \
-            -v /home/gituser/chainservice:/home/gituser/chainservice:ro \
+            -v /home/gituser/chainservice:/app/config:ro \
             -e BLOCKCHAIN_RPC_URL="${{ vars.BLOCKCHAIN_RPC_URL }}" \
             -e BLOCKCHAIN_CHAIN_ID="${{ vars.BLOCKCHAIN_CHAIN_ID }}" \
             -e GAS_PAYER_CONTRACT_ADDRESS="${{ vars.GAS_PAYER_CONTRACT_ADDRESS }}" \
@@ -100,4 +100,5 @@ jobs:
             -e MAX_GAS_LIMIT="${{ vars.MAX_GAS_LIMIT }}" \
             -e MAX_GAS_COST_WEI="${{ vars.MAX_GAS_COST_WEI }}" \
             -e MAX_GAS_PRICE_MULTIPLIER="${{ vars.MAX_GAS_PRICE_MULTIPLIER }}" \
+            -e SECURITY_CONFIG_FILE="/app/config/security-config.json" \
             ${{ fromJSON(steps.meta.outputs.json).tags[0] }}

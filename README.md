@@ -52,7 +52,6 @@ curl -X POST http://localhost:8080/api/v1/signed-transaction \
 |----------|-------------|---------|
 | `BLOCKCHAIN_RPC_URL` | Blockchain RPC endpoint | `https://api.avax-test.network/ext/bc/C/rpc` |
 | `BLOCKCHAIN_CHAIN_ID` | Chain ID | `43113` |
-| `RELAYER_PRIVATE_KEY` | Private key for gas funding | Required |
 | `GAS_PAYER_CONTRACT_ADDRESS` | Gas payer contract address | Required |
 | `SECURITY_CONFIG_FILE` | Path to security config | `/home/gituser/chainservice/security-config.json` |
 | `GAS_PRICE_MULTIPLIER` | Gas price buffer multiplier | `1.2` |
@@ -71,7 +70,6 @@ The service requires a security configuration file mounted at `/home/gituser/cha
 ```bash
 # Set required environment variables
 export BLOCKCHAIN_RPC_URL="your-rpc-url"
-export RELAYER_PRIVATE_KEY="your-private-key"
 export GAS_PAYER_CONTRACT_ADDRESS="your-contract-address"
 
 # Start the service
@@ -84,10 +82,10 @@ docker-compose up -d
 docker run -d \
   --name gas-payer-service \
   -p 8080:8080 \
-  -v /home/gituser/chainservice:/home/gituser/chainservice:ro \
+  -v /home/gituser/chainservice:/app/config:ro \
   -e BLOCKCHAIN_RPC_URL="your-rpc-url" \
-  -e RELAYER_PRIVATE_KEY="your-private-key" \
   -e GAS_PAYER_CONTRACT_ADDRESS="your-contract-address" \
+  -e SECURITY_CONFIG_FILE="/app/config/security-config.json" \
   ghcr.io/your-username/gas-payer-service:latest
 ```
 
