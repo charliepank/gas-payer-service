@@ -23,7 +23,7 @@ blockchain:
 
 # Security configuration file path
 security:
-  config-file: ${SECURITY_CONFIG_FILE:/home/gituser/chainservice/security-config.json}
+  config-path: ${SECURITY_CONFIG_FILE:/app/config/security-config.json}
 
 # Actuator endpoints
 management:
