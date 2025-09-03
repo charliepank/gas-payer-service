@@ -74,7 +74,7 @@ jobs:
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ vars.VM_IP }}
-        username: root
+        username: gituser
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           # Pull the new image
