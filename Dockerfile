@@ -1,20 +1,11 @@
-FROM openjdk:17-jdk-slim
+# Runtime stage
+FROM openjdk:17-jre-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy gradle wrapper and build files
-COPY gradle gradle
-COPY gradlew build.gradle.kts settings.gradle.kts ./
-
-# Copy source code
-COPY src src
-
-# Make gradlew executable and build the application
-RUN chmod +x ./gradlew && ./gradlew build --no-daemon
-
-# Copy the built JAR (use the Spring Boot fat jar, not the plain jar)
-RUN rm -f build/libs/gas-payer-service-*-plain.jar && cp build/libs/gas-payer-service-*.jar app.jar
+# Copy the pre-built JAR from GitHub workflow (use the Spring Boot fat jar, not the plain jar)
+COPY build/libs/gas-payer-service-*.jar app.jar
 
 # Create user for running the app
 RUN addgroup --system --gid 1001 appgroup && \
