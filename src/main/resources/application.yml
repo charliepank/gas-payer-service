@@ -35,6 +35,16 @@ management:
     health:
       show-details: always
 
+# OpenAPI documentation
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+
 # Logging
 logging:
   level:
