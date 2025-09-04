@@ -38,8 +38,9 @@ management:
 # Logging
 logging:
   level:
-    com.gaspayer: INFO
-    com.utility.chainservice: INFO
+    root: ${LOGGING_LEVEL:INFO}
+    com.gaspayer: ${LOGGING_LEVEL:INFO}
+    com.utility.chainservice: ${LOGGING_LEVEL:INFO}
     org.web3j: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

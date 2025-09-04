@@ -99,4 +99,5 @@ jobs:
             -e MAX_GAS_COST_WEI="${{ vars.MAX_GAS_COST_WEI }}" \
             -e MAX_GAS_PRICE_MULTIPLIER="${{ vars.MAX_GAS_PRICE_MULTIPLIER }}" \
             -e SECURITY_CONFIG_FILE="/app/config/security-config.json" \
+            -e LOGGING_LEVEL="${{ vars.LOGGING_LEVEL }}" \
             ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
