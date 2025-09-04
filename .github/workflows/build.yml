@@ -37,10 +37,7 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
 
-    - name: Run tests
-      run: ./gradlew test
-
-    - name: Build with Gradle
+    - name: Build with Gradle (includes tests)
       run: ./gradlew build
 
     - name: Log in to Container Registry
