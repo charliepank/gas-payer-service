@@ -1,6 +1,7 @@
 package com.gaspayer.controller
 
 import com.gaspayer.model.SignedTransactionRequest
+import com.gaspayer.model.FundWalletRequest
 import com.gaspayer.service.GasPayerService
 import com.utility.chainservice.models.TransactionResult
 import io.swagger.v3.oas.annotations.Operation
@@ -67,6 +68,60 @@ class TransactionController(
             
         } catch (e: Exception) {
             logger.error("Error processing signed transaction", e)
+            ResponseEntity.internalServerError().body(
+                TransactionResult(
+                    success = false,
+                    transactionHash = null,
+                    error = "Internal server error: ${e.message}"
+                )
+            )
+        }
+    }
+
+    @PostMapping("/fund-wallet")
+    @Operation(
+        summary = "Fund wallet conditionally",
+        description = """
+            Conditionally funds a wallet to ensure it has the specified total amount in wei.
+            Only adds the difference if the wallet doesn't already have sufficient funds.
+        """
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Wallet funding operation completed successfully"
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Invalid request or wallet validation failed"
+            ),
+            ApiResponse(
+                responseCode = "500",
+                description = "Internal server error during wallet funding"
+            )
+        ]
+    )
+    suspend fun fundWallet(
+        @Valid @RequestBody request: FundWalletRequest
+    ): ResponseEntity<TransactionResult> {
+        
+        logger.info("Processing fund wallet request for wallet: ${request.walletAddress}, amount: ${request.totalAmountNeededWei}")
+        
+        return try {
+            val result = gasPayerService.conditionalFunding(
+                walletAddress = request.walletAddress,
+                totalAmountNeededWei = request.totalAmountNeededWei
+            )
+            
+            if (result.success) {
+                ResponseEntity.ok(result)
+            } else {
+                ResponseEntity.badRequest().body(result)
+            }
+            
+        } catch (e: Exception) {
+            logger.error("Error processing fund wallet request", e)
             ResponseEntity.internalServerError().body(
                 TransactionResult(
                     success = false,

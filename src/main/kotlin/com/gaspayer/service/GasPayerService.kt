@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import org.web3j.crypto.Credentials
+import java.math.BigInteger
 
 @Service
 class GasPayerService(
@@ -39,6 +40,28 @@ class GasPayerService(
                 success = false,
                 transactionHash = null,
                 error = "Failed to process transaction: ${e.message}"
+            )
+        }
+    }
+
+    suspend fun conditionalFunding(
+        walletAddress: String,
+        totalAmountNeededWei: BigInteger
+    ): TransactionResult {
+        
+        logger.info("Processing conditional funding for wallet: $walletAddress, amount: $totalAmountNeededWei")
+        
+        return try {
+            blockchainRelayService.conditionalFunding(
+                walletAddress = walletAddress,
+                totalAmountNeededWei = totalAmountNeededWei
+            )
+        } catch (e: Exception) {
+            logger.error("Error processing conditional funding", e)
+            TransactionResult(
+                success = false,
+                transactionHash = null,
+                error = "Failed to process conditional funding: ${e.message}"
             )
         }
     }
