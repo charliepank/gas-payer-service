@@ -52,5 +52,7 @@ logging:
     com.gaspayer: ${LOGGING_LEVEL:INFO}
     com.utility.chainservice: ${LOGGING_LEVEL:INFO}
     org.web3j: WARN
+    org.apache.coyote.http11.Http11Processor: ERROR
+    org.apache.tomcat: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
