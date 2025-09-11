@@ -67,12 +67,12 @@ class TransactionController(
             }
             
         } catch (e: Exception) {
-            logger.error("Error processing signed transaction", e)
+            logger.error("Unexpected error in transaction controller for wallet: ${request.userWalletAddress}, operation: ${request.operationName}", e)
             ResponseEntity.internalServerError().body(
                 TransactionResult(
                     success = false,
                     transactionHash = null,
-                    error = "Internal server error: ${e.message}"
+                    error = "Internal server error processing transaction for operation '${request.operationName}': ${e.message ?: "Unknown error occurred"}"
                 )
             )
         }
@@ -121,12 +121,12 @@ class TransactionController(
             }
             
         } catch (e: Exception) {
-            logger.error("Error processing fund wallet request", e)
+            logger.error("Unexpected error in fund wallet controller for wallet: ${request.walletAddress}, amount: ${request.totalAmountNeededWei}", e)
             ResponseEntity.internalServerError().body(
                 TransactionResult(
                     success = false,
                     transactionHash = null,
-                    error = "Internal server error: ${e.message}"
+                    error = "Internal server error processing wallet funding for ${request.walletAddress}: ${e.message ?: "Unknown error occurred"}"
                 )
             )
         }
