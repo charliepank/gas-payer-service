@@ -49,9 +49,10 @@ data class SignedTransactionRequest(
     val signedTransactionHex: String,
 
     @Schema(
-        description = "Name of the blockchain operation for gas cost estimation",
+        description = "Name of the blockchain operation for gas cost estimation and logging",
         example = "transfer",
-        defaultValue = "unknown"
+        examples = ["transfer", "createEscrow", "releaseEscrow", "mintNFT", "stake", "unstake"]
     )
-    val operationName: String = "unknown"
+    @field:NotBlank(message = "Operation name is required")
+    val operationName: String
 )
