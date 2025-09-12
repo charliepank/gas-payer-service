@@ -88,7 +88,7 @@ class GasPayerService(
                     operationName = "wallet_funding",
                     userWalletAddress = walletAddress,
                     additionalContext = mapOf(
-                        "requestedAmount" to ErrorMessageEnhancer.formatWeiScientific(totalAmountNeededWei)
+                        "requestedAmount" to "${totalAmountNeededWei}wei"
                     )
                 )
                 
@@ -106,7 +106,7 @@ class GasPayerService(
                 operationName = "wallet_funding",
                 userWalletAddress = walletAddress,
                 additionalContext = mapOf(
-                    "requestedAmount" to ErrorMessageEnhancer.formatWeiScientific(totalAmountNeededWei),
+                    "requestedAmount" to "${totalAmountNeededWei}wei",
                     "exceptionType" to (e::class.simpleName ?: "Unknown")
                 )
             )
