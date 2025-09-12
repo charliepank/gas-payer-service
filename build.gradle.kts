@@ -30,7 +30,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     
     // Blockchain Relay Utility
-    implementation("com.github.charliepank:blockchain-relay-utility:v7.0.1")
+    implementation("com.github.charliepank:blockchain-relay-utility:v7.0.2")
     
     // Web3j for blockchain interaction (needed for Credentials class)
     implementation("org.web3j:core:4.12.2")

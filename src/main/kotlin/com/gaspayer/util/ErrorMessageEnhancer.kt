@@ -1,9 +1,6 @@
 package com.gaspayer.util
 
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.math.RoundingMode
 
 /**
  * Utility class for enhancing error messages with detailed gas information,
@@ -13,30 +10,6 @@ object ErrorMessageEnhancer {
     
     private val logger = LoggerFactory.getLogger(ErrorMessageEnhancer::class.java)
     
-    /**
-     * Formats a wei amount into scientific notation with ETH prefix
-     */
-    fun formatGasPriceScientific(weiAmount: BigInteger): String {
-        return try {
-            val ethAmount = BigDecimal(weiAmount).divide(BigDecimal("1000000000000000000"), 18, RoundingMode.HALF_UP)
-            "ETH:%.2E".format(ethAmount)
-        } catch (e: Exception) {
-            logger.debug("Failed to format gas price: ${e.message}")
-            "${weiAmount}wei"
-        }
-    }
-    
-    /**
-     * Formats a wei amount into scientific notation
-     */
-    fun formatWeiScientific(weiAmount: BigInteger): String {
-        return try {
-            "%.2E".format(weiAmount.toBigDecimal())
-        } catch (e: Exception) {
-            logger.debug("Failed to format wei amount: ${e.message}")
-            weiAmount.toString()
-        }
-    }
     
     /**
      * Extracts specific error information from blockchain-relay-utility error messages
@@ -51,52 +24,17 @@ object ErrorMessageEnhancer {
                 "Gas transfer failed${operation}: $details"
             }
             
-            // Gas validation errors
+            // Gas validation errors - pass through since blockchain-relay-utility already formats amounts
             originalError.contains("Transaction cost too high") -> {
-                val costMatch = Regex("Transaction cost too high: (\\d+) wei, maximum allowed (\\d+) wei").find(originalError)
-                if (costMatch != null) {
-                    val actualCost = BigInteger(costMatch.groupValues[1])
-                    val maxCost = BigInteger(costMatch.groupValues[2])
-                    val actualFormatted = formatWeiScientific(actualCost)
-                    val maxFormatted = formatWeiScientific(maxCost)
-                    "Transaction cost too high${operation}: actual cost ${actualFormatted}wei exceeds maximum allowed ${maxFormatted}wei"
-                } else {
-                    "Transaction cost exceeds limit${operation}: $originalError"
-                }
+                "Transaction cost exceeds limit${operation}: $originalError"
             }
             
-            originalError.contains("Gas limit exceeds expected") -> {
-                val gasMatch = Regex("Gas limit exceeds expected for operation '([^']+)': provided (\\d+), maximum allowed (\\d+)").find(originalError)
-                if (gasMatch != null) {
-                    val providedGas = formatWeiScientific(BigInteger(gasMatch.groupValues[2]))
-                    val maxGas = formatWeiScientific(BigInteger(gasMatch.groupValues[3]))
-                    "Gas limit exceeded${operation}: provided ${providedGas} exceeds maximum ${maxGas}"
-                } else {
-                    "Gas limit exceeded${operation}: $originalError"
-                }
-            }
-            
-            originalError.contains("Gas limit too high") -> {
-                val gasMatch = Regex("Gas limit too high: provided (\\d+), maximum allowed (\\d+)").find(originalError)
-                if (gasMatch != null) {
-                    val providedGas = formatWeiScientific(BigInteger(gasMatch.groupValues[1]))
-                    val maxGas = formatWeiScientific(BigInteger(gasMatch.groupValues[2]))
-                    "Gas limit too high${operation}: provided ${providedGas} exceeds maximum ${maxGas}"
-                } else {
-                    "Gas limit too high${operation}: $originalError"
-                }
+            originalError.contains("Gas limit exceeds expected") || originalError.contains("Gas limit too high") -> {
+                "Gas limit exceeded${operation}: $originalError"
             }
             
             originalError.contains("Gas price too high") -> {
-                val priceMatch = Regex("Gas price too high: provided (\\d+), maximum allowed (\\d+) \\(current network: (\\d+)\\)").find(originalError)
-                if (priceMatch != null) {
-                    val providedPrice = formatGasPriceScientific(BigInteger(priceMatch.groupValues[1]))
-                    val maxPrice = formatGasPriceScientific(BigInteger(priceMatch.groupValues[2]))
-                    val networkPrice = formatGasPriceScientific(BigInteger(priceMatch.groupValues[3]))
-                    "Gas price too high${operation}: provided $providedPrice exceeds maximum $maxPrice (current network: $networkPrice)"
-                } else {
-                    "Gas price exceeds limit${operation}: $originalError"
-                }
+                "Gas price exceeds limit${operation}: $originalError"
             }
             
             // Balance and funding issues
@@ -175,25 +113,7 @@ object ErrorMessageEnhancer {
         
         // Add additional context if provided
         additionalContext?.forEach { (key, value) ->
-            when (key) {
-                "gasPrice" -> {
-                    val gasPrice = when (value) {
-                        is BigInteger -> formatGasPriceScientific(value)
-                        is String -> value
-                        else -> value.toString()
-                    }
-                    context.add("gasPrice: $gasPrice")
-                }
-                "gasLimit" -> {
-                    val gasLimit = when (value) {
-                        is BigInteger -> formatWeiScientific(value)
-                        is String -> value
-                        else -> value.toString()
-                    }
-                    context.add("gasLimit: $gasLimit")
-                }
-                else -> context.add("$key: $value")
-            }
+            context.add("$key: $value")
         }
         
         return if (context.isNotEmpty()) {
