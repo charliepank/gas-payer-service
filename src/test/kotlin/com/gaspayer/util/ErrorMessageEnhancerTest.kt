@@ -86,7 +86,7 @@ class ErrorMessageEnhancerTest {
         )
 
         assertTrue(result.contains("Gas price exceeds limit for operation 'token_transfer'"))
-        assertTrue(result.contains("wallet: 0x12345678...5678")) // truncated wallet address
+        assertTrue(result.contains("wallet: 0x123456...5678")) // truncated wallet address (take(8)...takeLast(4))
         assertTrue(result.contains("gasPrice: 50000000000")) // context value
         assertTrue(result.contains("gasLimit: 100000")) // context value
     }
