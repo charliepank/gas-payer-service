@@ -7,6 +7,11 @@ WORKDIR /app
 # Copy the pre-built JAR from GitHub workflow (use the Spring Boot fat jar, not the plain jar)
 COPY build/libs/gas-payer-service-*.jar app.jar
 
+# Install curl for healthcheck (compatible with both amd64 and arm64)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Create user for running the app
 RUN addgroup --system --gid 1001 appgroup && \
     adduser --system --uid 1001 --gid 1001 appuser
