@@ -10,9 +10,9 @@ spring:
 # Blockchain configuration
 blockchain:
   rpc:
-    url: ${BLOCKCHAIN_RPC_URL:https://api.avax-test.network/ext/bc/C/rpc}
+    url: ${BLOCKCHAIN_RPC_URL}
   chain:
-    id: ${BLOCKCHAIN_CHAIN_ID:43113}
+    id: ${BLOCKCHAIN_CHAIN_ID}
   relayer:
     gas-payer-contract-address: ${GAS_PAYER_CONTRACT_ADDRESS:}
   gas:
