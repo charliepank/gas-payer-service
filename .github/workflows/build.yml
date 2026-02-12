@@ -97,6 +97,7 @@ jobs:
             --name ${{ vars.SERVICE_NAME }} \
             --network webnet \
             --restart unless-stopped \
+            --memory=512m \
             -v ${{ secrets.CONFIG_DIR }}:/app/config:ro \
             -e BLOCKCHAIN_RPC_URL="${{ vars.BLOCKCHAIN_RPC_URL }}" \
             -e BLOCKCHAIN_CHAIN_ID="${{ vars.BLOCKCHAIN_CHAIN_ID }}" \
@@ -107,4 +108,5 @@ jobs:
             -e MAX_GAS_PRICE_MULTIPLIER="${{ vars.MAX_GAS_PRICE_MULTIPLIER }}" \
             -e SECURITY_CONFIG_FILE="/app/config/security-config.json" \
             -e LOGGING_LEVEL="${{ vars.LOGGING_LEVEL }}" \
+            -e JAVA_OPTS="-Xmx358m -Xms256m" \
             ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
