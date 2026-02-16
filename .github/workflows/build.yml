@@ -99,10 +99,8 @@ jobs:
           docker pull ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
 
           # Stop and remove existing container (ignore errors if container doesn't exist)
-          if docker ps -a --format '{{.Names}}' | grep -q '^${{ vars.SERVICE_NAME }}$'; then
-            docker stop ${{ vars.SERVICE_NAME }}
-            docker rm ${{ vars.SERVICE_NAME }}
-          fi
+          docker stop ${{ vars.SERVICE_NAME }} 2>/dev/null || true
+          docker rm ${{ vars.SERVICE_NAME }} 2>/dev/null || true
 
           # Run new container
           docker run -d \
