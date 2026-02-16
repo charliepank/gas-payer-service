@@ -7,6 +7,7 @@ on:
       - 'test*'
       - 'baseDev*'
       - 'avalancheFuji*'
+      - 'avalanche*'
       - 'cherry*'
   pull_request:
     branches: [ main ]
@@ -18,7 +19,15 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || startsWith(github.ref, 'refs/tags/avalancheFuji') && 'avalancheFuji' || startsWith(github.ref, 'refs/tags/baseDev') && 'baseDev' || startsWith(github.ref, 'refs/tags/cherry') && 'cherry' || startsWith(github.ref, 'refs/tags/test') && 'test' || 'development' }}
+    environment: ${{
+      startsWith(github.ref, 'refs/tags/v') && 'production' ||
+      startsWith(github.ref, 'refs/tags/avalancheFuji') && 'avalancheFuji' ||
+      startsWith(github.ref, 'refs/tags/baseDev') && 'baseDev' ||
+      startsWith(github.ref, 'refs/tags/cherry') && 'cherry' ||
+      startsWith(github.ref, 'refs/tags/test') && 'test' ||
+      startsWith(github.ref, 'refs/tags/avalanche') && 'avalanche' ||
+      'development'
+    }}
     permissions:
       contents: read
       packages: write
