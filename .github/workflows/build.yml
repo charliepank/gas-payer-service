@@ -91,7 +91,7 @@ jobs:
         host: ${{ vars.VM_IP }}
         username: gituser
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
+        script: |-
           # Login to GitHub Container Registry
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
