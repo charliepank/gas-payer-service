@@ -14,11 +14,13 @@ services:
       - MAX_GAS_COST_WEI=${MAX_GAS_COST_WEI:-1000000000000000000}
       - MAX_GAS_PRICE_MULTIPLIER=${MAX_GAS_PRICE_MULTIPLIER:-3.2}
       - SECURITY_CONFIG_FILE=/home/gituser/chainservice/security-config.json
+      - JAVA_OPTS=-Xmx128m -Xms64m
     volumes:
       - /home/gituser/chainservice:/home/gituser/chainservice:ro
     restart: unless-stopped
     networks:
       - webnet
+    mem_limit: 175m
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
