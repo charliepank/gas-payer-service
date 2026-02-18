@@ -118,5 +118,5 @@ jobs:
             -e MAX_GAS_PRICE_MULTIPLIER="${{ vars.MAX_GAS_PRICE_MULTIPLIER }}" \
             -e SECURITY_CONFIG_FILE="/app/config/security-config.json" \
             -e LOGGING_LEVEL="${{ vars.LOGGING_LEVEL }}" \
-            -e JAVA_OPTS="-Xmx90m -Xms90m -XX:MaxMetaspaceSize=50m -XX:CompressedClassSpaceSize=20m -XX:ReservedCodeCacheSize=20m -XX:+UseSerialGC -XX:MaxRAM=200m -Xss256k -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:MaxDirectMemorySize=10m" \
+            -e JAVA_OPTS="-Xmx80m -Xms80m -XX:MaxMetaspaceSize=80m -XX:CompressedClassSpaceSize=20m -XX:ReservedCodeCacheSize=20m -XX:+UseSerialGC -XX:MaxRAM=200m -Xss256k -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:MaxDirectMemorySize=10m" \
             ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
