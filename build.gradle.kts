@@ -18,25 +18,24 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    // Spring Boot - exclude unnecessary dependencies
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
+    }
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    
+
     // Kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-    
+
     // Blockchain Relay Utility
     implementation("com.github.charliepank:blockchain-relay-utility:v8.0.0")
-    
+
     // Web3j for blockchain interaction (needed for Credentials class)
     implementation("org.web3j:core:4.12.2")
-    
-    // OpenAPI/Swagger documentation
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
