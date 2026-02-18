@@ -1,5 +1,5 @@
-# Runtime stage
-FROM eclipse-temurin:17-jre
+# Runtime stage - using Alpine for minimal footprint
+FROM eclipse-temurin:17-jre-alpine
 
 # Set working directory
 WORKDIR /app
@@ -8,13 +8,11 @@ WORKDIR /app
 COPY build/libs/gas-payer-service-*.jar app.jar
 
 # Install curl for healthcheck (compatible with both amd64 and arm64)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 
 # Create user for running the app
-RUN addgroup --system --gid 1001 appgroup && \
-    adduser --system --uid 1001 --gid 1001 appuser
+RUN addgroup -S -g 1001 appgroup && \
+    adduser -S -u 1001 -G appgroup appuser
 
 # Change ownership of the app directory
 RUN chown -R appuser:appgroup /app
