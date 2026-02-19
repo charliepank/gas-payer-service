@@ -107,7 +107,7 @@ jobs:
             --name ${{ vars.SERVICE_NAME }} \
             --network webnet \
             --restart unless-stopped \
-            --memory=200m \
+            --memory=250m \
             -v ${{ secrets.CONFIG_DIR }}:/app/config:ro \
             -e BLOCKCHAIN_RPC_URL="${{ vars.BLOCKCHAIN_RPC_URL }}" \
             -e BLOCKCHAIN_CHAIN_ID="${{ vars.BLOCKCHAIN_CHAIN_ID }}" \
