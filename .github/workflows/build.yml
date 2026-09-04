@@ -86,37 +86,56 @@ jobs:
 
     - name: Deploy to VM
       if: github.event_name != 'pull_request'
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ vars.VM_IP }}
-        username: gituser
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |-
-          # Login to GitHub Container Registry
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      run: |
+        set -o pipefail
 
-          # Pull the new image using the tag created by metadata action
-          docker pull ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+        # The key is held in an agent, never written to disk. `ssh -i` takes a
+        # path and has no way to accept a key as a string, so the choice is a
+        # file or an agent - and a file left in ~/.ssh stays readable by every
+        # later step in the job, including any third-party action.
+        # printf, not echo: ssh-add rejects a key without a trailing newline.
+        eval "$(ssh-agent -s)" > /dev/null
+        trap 'ssh-agent -k > /dev/null 2>&1 || true' EXIT
+        printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add - 2>/dev/null \
+          || { echo "Could not load SSH_PRIVATE_KEY into the agent" >&2; exit 1; }
 
-          # Stop and remove existing container (ignore errors if container doesn't exist)
-          docker stop ${{ vars.SERVICE_NAME }} 2>/dev/null || true
-          docker rm ${{ vars.SERVICE_NAME }} 2>/dev/null || true
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${{ vars.VM_IP }} >> ~/.ssh/known_hosts
 
-          # Run new container
-          docker run -d \
-            --name ${{ vars.SERVICE_NAME }} \
-            --network webnet \
-            --restart unless-stopped \
-            --memory=250m \
-            -v ${{ secrets.CONFIG_DIR }}:/app/config:ro \
-            -e BLOCKCHAIN_RPC_URL="${{ vars.BLOCKCHAIN_RPC_URL }}" \
-            -e BLOCKCHAIN_CHAIN_ID="${{ vars.BLOCKCHAIN_CHAIN_ID }}" \
-            -e GAS_PAYER_CONTRACT_ADDRESS="${{ vars.GAS_PAYER_CONTRACT_ADDRESS }}" \
-            -e GAS_PRICE_MULTIPLIER="${{ vars.GAS_PRICE_MULTIPLIER }}" \
-            -e MAX_GAS_LIMIT="${{ vars.MAX_GAS_LIMIT }}" \
-            -e MAX_GAS_COST_WEI="${{ vars.MAX_GAS_COST_WEI }}" \
-            -e MAX_GAS_PRICE_MULTIPLIER="${{ vars.MAX_GAS_PRICE_MULTIPLIER }}" \
-            -e SECURITY_CONFIG_FILE="/app/config/security-config.json" \
-            -e LOGGING_LEVEL="${{ vars.LOGGING_LEVEL }}" \
-            -e JAVA_OPTS="-Xmx80m -Xms80m -XX:MaxMetaspaceSize=80m -XX:CompressedClassSpaceSize=20m -XX:ReservedCodeCacheSize=20m -XX:+UseSerialGC -XX:MaxRAM=200m -Xss256k -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:MaxDirectMemorySize=10m" \
-            ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+        # `bash -s` takes the script on stdin; docker login reads its password
+        # from a pipe, so it does not eat the heredoc.
+        ssh -o BatchMode=yes -o ServerAliveInterval=15 \
+            -l gituser ${{ vars.VM_IP }} bash -s <<'REMOTE'
+        # Fail before the running container is stopped, so a bad pull leaves
+        # the current version serving instead of taking the box down.
+        set -e
+
+        # Login to GitHub Container Registry
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+        # Pull the new image using the tag created by metadata action
+        docker pull ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+
+        # Stop and remove existing container (ignore errors if container doesn't exist)
+        docker stop ${{ vars.SERVICE_NAME }} 2>/dev/null || true
+        docker rm ${{ vars.SERVICE_NAME }} 2>/dev/null || true
+
+        # Run new container
+        docker run -d \
+          --name ${{ vars.SERVICE_NAME }} \
+          --network webnet \
+          --restart unless-stopped \
+          --memory=250m \
+          -v ${{ secrets.CONFIG_DIR }}:/app/config:ro \
+          -e BLOCKCHAIN_RPC_URL="${{ vars.BLOCKCHAIN_RPC_URL }}" \
+          -e BLOCKCHAIN_CHAIN_ID="${{ vars.BLOCKCHAIN_CHAIN_ID }}" \
+          -e GAS_PAYER_CONTRACT_ADDRESS="${{ vars.GAS_PAYER_CONTRACT_ADDRESS }}" \
+          -e GAS_PRICE_MULTIPLIER="${{ vars.GAS_PRICE_MULTIPLIER }}" \
+          -e MAX_GAS_LIMIT="${{ vars.MAX_GAS_LIMIT }}" \
+          -e MAX_GAS_COST_WEI="${{ vars.MAX_GAS_COST_WEI }}" \
+          -e MAX_GAS_PRICE_MULTIPLIER="${{ vars.MAX_GAS_PRICE_MULTIPLIER }}" \
+          -e SECURITY_CONFIG_FILE="/app/config/security-config.json" \
+          -e LOGGING_LEVEL="${{ vars.LOGGING_LEVEL }}" \
+          -e JAVA_OPTS="-Xmx80m -Xms80m -XX:MaxMetaspaceSize=80m -XX:CompressedClassSpaceSize=20m -XX:ReservedCodeCacheSize=20m -XX:+UseSerialGC -XX:MaxRAM=200m -Xss256k -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:MaxDirectMemorySize=10m" \
+          ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+        REMOTE
