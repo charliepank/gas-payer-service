@@ -70,12 +70,27 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        # ⚠️ NAMED BY THE COMMIT SHA ONLY, never the release tag: a git tag can be put on the
+        #    wrong commit, the SHA cannot. The deploy pulls tags[0], which is this.
         tags: |
-          type=ref,event=tag
-          type=sha,prefix={{tag}}-
+          type=sha,prefix=,format=short
+
+    # ⚠️ ONE IMAGE PER COMMIT. Tagging an already-built commit for another environment (test,
+    #    baseDev, avalanche, production…) deploys the image that exists — no rebuild.
+    - name: Is this commit's image already built?
+      if: github.event_name != 'pull_request'
+      id: image
+      run: |
+        IMAGE="${REGISTRY}/${IMAGE_NAME,,}:${GITHUB_SHA::7}"
+        if docker buildx imagetools inspect "$IMAGE" >/dev/null 2>&1; then
+          echo "$IMAGE exists; it will be deployed, not rebuilt."
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
 
     - name: Build and push Docker image
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && steps.image.outputs.exists != 'true'
       uses: docker/build-push-action@v5
       with:
         context: .
