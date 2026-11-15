@@ -1,6 +1,7 @@
 package com.gaspayer.service
 
 import com.gaspayer.util.ErrorMessageEnhancer
+import com.utility.chainservice.BlockchainProperties
 import com.utility.chainservice.BlockchainRelayService
 import com.utility.chainservice.models.TransactionResult
 import org.slf4j.LoggerFactory
@@ -12,7 +13,8 @@ import java.math.BigInteger
 
 @Service
 class GasPayerService(
-    private val blockchainRelayService: BlockchainRelayService
+    private val blockchainRelayService: BlockchainRelayService,
+    private val blockchainProperties: BlockchainProperties
 ) {
     
     private val logger = LoggerFactory.getLogger(GasPayerService::class.java)
@@ -74,7 +76,19 @@ class GasPayerService(
     ): TransactionResult {
         
         logger.info("Processing conditional funding for wallet: $walletAddress, amount: $totalAmountNeededWei")
-        
+
+        // The same ceiling a signed transaction's total cost is held to (validateGasLimits in the
+        // relay library). Funding had none: on 2026-11-15 a caller asked for 0.0002 ETH and got it.
+        val maxWei = BigInteger.valueOf(blockchainProperties.gas.maxGasCostWei)
+        if (totalAmountNeededWei > maxWei) {
+            logger.warn("Refused funding for wallet: $walletAddress, amount $totalAmountNeededWei wei is over the maximum of $maxWei wei")
+            return TransactionResult(
+                success = false,
+                transactionHash = null,
+                error = "Funding amount too high: $totalAmountNeededWei wei, maximum allowed $maxWei wei"
+            )
+        }
+
         return try {
             val result = blockchainRelayService.conditionalFunding(
                 walletAddress = walletAddress,
